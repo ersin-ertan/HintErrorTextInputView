@@ -12,44 +12,50 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.github.ersin_ertan.app.MainActivity"
     >
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      >
 
-  <!--app:editTextTextSizeSp="16"-->
-  <com.github.ersin_ertan.hinterrortextinputview.HintErrorTextInputView
-      android:id="@+id/hint1"
-      android:layout_width="300dp"
-      android:layout_height="wrap_content"
-      android:hint="This is the hint"
-      android:imeOptions="actionNext"
-      android:inputType="textPersonName|textCapWords"
-      app:floatingLabelTextAppearance="@style/cf"
-      tools:layout_height="100dp"
-      />
-  <!--android:textColor="@android:color/holo_blue_bright"-->
+    <!--app:editTextTextSizeSp="16"-->
+    <com.github.ersin_ertan.hinterrortextinputview.HintErrorTextInputView
+        android:id="@+id/hint1"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:hint="This is the hint"
+        android:imeOptions="actionNext"
+        android:inputType="textPersonName|textCapWords"
+        tools:layout_height="100dp"
+        />
+    <!--android:textColor="@android:color/holo_blue_bright"-->
 
-  <com.github.ersin_ertan.hinterrortextinputview.HintErrorTextInputView
-      android:id="@+id/hint2"
-      android:layout_width="300dp"
-      android:layout_height="wrap_content"
-      android:layout_alignParentStart="true"
-      android:layout_below="@+id/hint1"
-      android:hint="This is the hint"
-      android:imeOptions="actionNext"
-      android:inputType="textPersonName|textCapWords"
-      app:errorEnabled="true"
-      app:hintAnimationEnabled="true"
-      app:hintEnabled="true"
-      app:showHintAndLabel="true"
-      app:showUnderline="false"
-      tools:layout_height="100dp"
-      />
-  <Button
-      android:id="@+id/button"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_alignParentEnd="true"
-      android:layout_alignParentTop="true"
-      android:text="validate"
-      />
+    <com.github.ersin_ertan.hinterrortextinputview.HintErrorTextInputView
+        android:id="@+id/hint2"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/hint1"
+        android:hint="This is the hint"
+        android:imeOptions="actionNext"
+        android:inputType="textPersonName|textCapWords"
+        app:errorEnabled="true"
+        app:hintAnimationEnabled="true"
+        app:hintEnabled="true"
+        app:showHintAndLabel="true"
+        app:showUnderline="false"
+        tools:layout_height="100dp"
+        />
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:text="validate"
+        />
+
+  </LinearLayout>
 
 
 </RelativeLayout>

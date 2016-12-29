@@ -25,16 +25,14 @@ import java.util.List;
 
 public class HintErrorTextInputView extends TextInputLayout {
 
-  private int errorTextAppearance;
+  private static final int AVG_NUM_VALIDATORS = 2;
 
   // TODO: 12/28/16 enable and disable error to have smaller sized views
-
-  private static final int AVG_NUM_VALIDATORS = 2;
   List<Validateable> validators;
   boolean isShowingError = false;
+  private int errorTextAppearance;
   private TextInputEditText textInputEditText;
   private String hint;
-  boolean isErrorEnabled = false;
 
   public HintErrorTextInputView(Context context) {
     super(context);
@@ -62,11 +60,6 @@ public class HintErrorTextInputView extends TextInputLayout {
     //Typeface tf = Typeface.createFromAsset(getContext().getAssets(), "fonts/AvenirLTStd-Roman.otf");
     //textInputEditText.setTypeface(tf);
     //setTypeface(tf);
-    if (isErrorEnabled()) {
-      isErrorEnabled = true;
-      setErrorEnabled(false);
-    }
-
     textInputEditText.addTextChangedListener(new TextWatcher() {
       @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {
       }
@@ -75,11 +68,10 @@ public class HintErrorTextInputView extends TextInputLayout {
       }
 
       @Override public void afterTextChanged(Editable s) {
-        if (isShowingError && isErrorEnabled) {
+        if (isShowingError && isErrorEnabled()) {
           isShowingError = false;
           TransitionManager.beginDelayedTransition(HintErrorTextInputView.this);
-          //setError(""); // delete me
-          setErrorEnabled(false);
+          setError("");
         }
       }
     });
@@ -143,6 +135,9 @@ public class HintErrorTextInputView extends TextInputLayout {
         } else {
           setHintAnimationEnabled(false); // else overlap on edittext unfocus with hint/label
         }
+        if (typedArray.getBoolean(R.styleable.HintErrorTextInputView_errorEnabled, true)) {
+          setErrorEnabled(true);
+        }
 
         typedArray.recycle();
       }
@@ -179,13 +174,10 @@ public class HintErrorTextInputView extends TextInputLayout {
   }
 
   private boolean setErrorText(@NonNull String errorRes) {
-    if (isErrorEnabled) {
-      setErrorEnabled(true);
+    if (isErrorEnabled()) {
       isShowingError = true;
       TransitionManager.beginDelayedTransition(this);
-      if (hint != null) {
-        setError(hint + " " + errorRes);
-      }
+      if (hint != null) setError(hint + " " + errorRes);
       textInputEditText.requestFocus(); // add ability to show or hide keyboard
     }
     return false;

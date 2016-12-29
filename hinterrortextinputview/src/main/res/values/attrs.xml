@@ -5,6 +5,7 @@
     <attr format="reference" name="floatingLabelTextAppearance"/>
     <attr format="boolean" name="showUnderline"/>
     <attr format="boolean" name="showHintAndLabel"/>
+    <attr format="boolean" name="errorEnabled"/>
     <!-- android attrs need not formats-->
     <attr name="android:hint"/>
     <attr name="android:inputType"/>
