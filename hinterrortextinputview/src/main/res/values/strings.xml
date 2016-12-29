@@ -1,3 +1,10 @@
 <resources>
-  <string name="app_name">HintErrorTextInputView</string>
+
+  <string name="error_empty_len">is empty</string>
+  <string name="error_max_len">must be at most</string>
+  <string name="error_min_len">must be at least</string>
+  <string name="error_min_max_len">must be between</string>
+  <string name="error_max_val">must be equal to or less than</string>
+  <string name="error_min_val">must be equal to or greater than</string>
+
 </resources>

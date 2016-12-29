@@ -1,0 +1,24 @@
+General
+
+Relies on private fields in design library.
+Single values will overwrite textAppearance values
+
+
+todo
+
+remove dependencies on private design lib
+add ability to change, both hints textAppearance
+add ability to change textAppearance state when not selected, when error, when overflowed...
+
+get the text appearance and when visible set the text appearance of the view? and only change
+the color manually?
+
+  font family ? or let the text appearance do both?
+
+might have to look at unfocused hint color, for text label and manualy change it because when the hint
+animation is enabled, it might come down overlapping the empty hint... look into this
+
+look into why the view is so large if the error is enabled, curently the lib turns on and off
+the error, changing the allowing for a smaller initial size
+
+unfocused for floating label and hint
