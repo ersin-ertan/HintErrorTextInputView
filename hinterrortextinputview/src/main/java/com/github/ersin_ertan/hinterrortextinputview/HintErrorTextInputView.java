@@ -2,18 +2,24 @@ package com.github.ersin_ertan.hinterrortextinputview;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StyleRes;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.transition.TransitionManager;
 import android.support.v4.content.ContextCompat;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
+import android.text.method.KeyListener;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import com.github.ersin_ertan.hinterrortextinputview.validator.Validateable;
 import java.util.ArrayList;
@@ -30,29 +36,34 @@ public class HintErrorTextInputView extends TextInputLayout {
   // TODO: 12/28/16 enable and disable error to have smaller sized views
   List<Validateable> validators;
   boolean isShowingError = false;
-  private int errorTextAppearance;
+  @StyleRes private int errorTextAppearance;
+  @StyleRes private int labelTextAppearance;
   private TextInputEditText textInputEditText;
   private String hint;
+  private int inputType;
+  private KeyListener keyListener;
 
   public HintErrorTextInputView(Context context) {
     super(context);
     textInputEditText = new TextInputEditText(getContext());
-    //setAttributeValues(attrs);
     initEditText(textInputEditText);
+    setSaveEnabled(true);
   }
 
   public HintErrorTextInputView(Context context, AttributeSet attrs) {
     super(context, attrs);
     textInputEditText = new TextInputEditText(getContext());
-    setAttributeValues(attrs);
     initEditText(textInputEditText);
+    setAttributeValues(attrs);
+    setSaveEnabled(true);
   }
 
   public HintErrorTextInputView(Context context, AttributeSet attrs, int defStyleAttr) {
     super(context, attrs, defStyleAttr);
     textInputEditText = new TextInputEditText(getContext());
-    setAttributeValues(attrs);
     initEditText(textInputEditText);
+    setAttributeValues(attrs);
+    setSaveEnabled(true);
   }
 
   private void initEditText(TextInputEditText textInputEditText) {
@@ -105,10 +116,9 @@ public class HintErrorTextInputView extends TextInputLayout {
           hint = typedArray.getText(R.styleable.HintErrorTextInputView_android_hint).toString();
           setHint(hint);
         }
-        //textInputEditText.setInputType(typedArray.getInteger(1, InputType.TYPE_CLASS_TEXT));
-        textInputEditText.setInputType(
-            typedArray.getInteger(R.styleable.HintErrorTextInputView_android_inputType,
-                textInputEditText.getInputType()));
+        inputType = typedArray.getInteger(R.styleable.HintErrorTextInputView_android_inputType,
+            textInputEditText.getInputType());
+        textInputEditText.setInputType(inputType);
 
         textInputEditText.setTextColor(
             typedArray.getInteger(R.styleable.HintErrorTextInputView_android_textColor,
@@ -128,25 +138,60 @@ public class HintErrorTextInputView extends TextInputLayout {
         textInputEditText.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
         //textInputEditText.getTextSize() / getResources().getDisplayMetrics().scaledDensity);
 
-        if (!typedArray.getBoolean(R.styleable.HintErrorTextInputView_showHintAndLabel, false)) {
-          // prevents the dual hints edittext/floating label, to change color, use style
-          textInputEditText.setHintTextColor(
-              ContextCompat.getColor(getContext(), android.R.color.transparent));
-        } else {
-          setHintAnimationEnabled(false); // else overlap on edittext unfocus with hint/label
-        }
+        //if (!typedArray.getBoolean(R.styleable.HintErrorTextInputView_showHintAndLabel, false)) {
+        // prevents the dual hints edittext/floating label, to change color, use style
+        textInputEditText.setHintTextColor(
+            ContextCompat.getColor(getContext(), android.R.color.transparent));
+        //}
+        //else {
+        //    setHintAnimationEnabled(false); // else overlap on edittext unfocus with hint/label
+        //  }
         if (typedArray.getBoolean(R.styleable.HintErrorTextInputView_errorEnabled, true)) {
           setErrorEnabled(true);
         }
 
-        typedArray.recycle();
+        CharSequence text = typedArray.getText(R.styleable.HintErrorTextInputView_android_text);
+        if (text != null) {
+          textInputEditText.setText(text);
+        }
       }
+
+      setEditable(typedArray.getBoolean(R.styleable.HintErrorTextInputView_android_editable, true));
+
+      typedArray.recycle();
+    }
+  }
+
+  public void setEditable(boolean isEditable) {
+    if (isEditable) {
+      textInputEditText.setTextIsSelectable(true);
+      textInputEditText.setFocusableInTouchMode(true);
+      textInputEditText.setInputType(inputType);
+      textInputEditText.setFocusable(true);
+      textInputEditText.setCursorVisible(true);
+      if (keyListener != null) {
+        textInputEditText.setKeyListener(keyListener);
+      }
+    } else {
+      textInputEditText.setTextIsSelectable(true);
+      textInputEditText.setFocusableInTouchMode(true);
+      textInputEditText.setInputType(InputType.TYPE_NULL);
+      keyListener = textInputEditText.getKeyListener();
+      textInputEditText.setKeyListener(null);
+      textInputEditText.setCursorVisible(false);
+      ((InputMethodManager) getContext().getSystemService(
+          Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(textInputEditText.getWindowToken(),
+          0);
     }
   }
 
   @Override public boolean onTouchEvent(MotionEvent event) {
     textInputEditText.requestFocus();
     return super.onTouchEvent(event);
+  }
+
+  public void setText(String text) {
+    textInputEditText.setText(text);
   }
 
   /**
@@ -181,5 +226,61 @@ public class HintErrorTextInputView extends TextInputLayout {
       textInputEditText.requestFocus(); // add ability to show or hide keyboard
     }
     return false;
+  }
+
+  // save state
+
+  @Override public Parcelable onSaveInstanceState() {
+    Parcelable superState = super.onSaveInstanceState();
+    SavedState ss = new SavedState(superState);
+
+    ss.inputType = inputType;
+    ss.isShowingError = isShowingError ? 1 : 0;
+
+    return ss;
+  }
+
+  @Override public void onRestoreInstanceState(Parcelable state) {
+    if (!(state instanceof SavedState)) {
+      super.onRestoreInstanceState(state);
+      return;
+    }
+
+    SavedState ss = (SavedState) state;
+    super.onRestoreInstanceState(ss.getSuperState());
+
+    inputType = ss.inputType;
+    isShowingError = ss.isShowingError == 1;
+  }
+
+  static class SavedState extends BaseSavedState {
+    public static final Parcelable.Creator<SavedState> CREATOR =
+        new Parcelable.Creator<SavedState>() {
+          public SavedState createFromParcel(Parcel in) {
+            return new SavedState(in);
+          }
+
+          public SavedState[] newArray(int size) {
+            return new SavedState[size];
+          }
+        };
+    int inputType;
+    int isShowingError;
+
+    SavedState(Parcelable superState) {
+      super(superState);
+    }
+
+    private SavedState(Parcel in) {
+      super(in);
+      this.inputType = in.readInt();
+      this.isShowingError = in.readInt();
+    }
+
+    @Override public void writeToParcel(Parcel out, int flags) {
+      super.writeToParcel(out, flags);
+      out.writeInt(this.inputType);
+      out.writeInt(this.isShowingError);
+    }
   }
 }

@@ -21,12 +21,14 @@ public class MainActivity extends AppCompatActivity {
 
     hint1 = (HintErrorTextInputView) findViewById(R.id.hint1);
     hint1.validateThat(MaxLength.is(this, 2));
-
-    hint2 = (HintErrorTextInputView) findViewById(R.id.hint2);
     button = (Button) findViewById(R.id.button);
+    final boolean[] e = { false };
     button.setOnClickListener(new View.OnClickListener() {
       @Override public void onClick(View v) {
-        if (hint1.isValid()) Toast.makeText(MainActivity.this, "Valid", Toast.LENGTH_SHORT).show();
+        //hint1.setEditable(true);
+        if (hint1.isValid()) Toast.makeText(MainActivity.this, "valid", Toast.LENGTH_SHORT).show();
+        hint1.setEditable(e[0]);
+        e[0] = !e[0];
       }
     });
   }

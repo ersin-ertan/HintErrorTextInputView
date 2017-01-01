@@ -4,7 +4,6 @@
     <attr format="reference" name="errorTextAppearance"/>
     <attr format="reference" name="floatingLabelTextAppearance"/>
     <attr format="boolean" name="showUnderline"/>
-    <attr format="boolean" name="showHintAndLabel"/>
     <attr format="boolean" name="errorEnabled"/>
     <!-- android attrs need not formats-->
     <attr name="android:hint"/>
@@ -13,5 +12,7 @@
     <attr name="android:textAppearance"/>
     <attr name="android:textColor"/>
     <attr name="android:textSize"/>
+    <attr name="android:editable"/>
+    <attr name="android:text"/>
   </declare-styleable>
 </resources>
