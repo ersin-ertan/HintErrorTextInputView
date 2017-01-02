@@ -13,7 +13,7 @@ public class MaxLength extends AbsValidateable {
 
   public final int max;
 
-  private MaxLength(int max, String errorMessage) {
+  private MaxLength(int max, CharSequence errorMessage) {
     this.max = max;
     this.errorMessage = errorMessage;
   }

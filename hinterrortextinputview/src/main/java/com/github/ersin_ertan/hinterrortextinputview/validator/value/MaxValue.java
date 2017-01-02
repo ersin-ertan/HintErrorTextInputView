@@ -13,7 +13,7 @@ public class MaxValue<T extends Number> extends AbsValidateable {
 
   public final T max;
 
-  private MaxValue(T max, String errorMessage) {
+  private MaxValue(T max, CharSequence errorMessage) {
     this.max = max;
     this.errorMessage = errorMessage;
   }

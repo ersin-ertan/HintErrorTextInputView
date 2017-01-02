@@ -11,7 +11,7 @@ import com.github.ersin_ertan.hinterrortextinputview.validator.AbsValidateable;
 
 public class Empty extends AbsValidateable {
 
-  private Empty(String errorMessage) {
+  private Empty(CharSequence errorMessage) {
     this.errorMessage = errorMessage;
   }
 
@@ -19,7 +19,7 @@ public class Empty extends AbsValidateable {
     return new Empty(context.getString(R.string.error_empty_len));
   }
 
-  public static Empty not(@NonNull String errorMessage) {
+  public static Empty not(@NonNull CharSequence errorMessage) {
     return new Empty(errorMessage);
   }
 

@@ -4,12 +4,9 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.StyleRes;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
-import android.support.transition.TransitionManager;
 import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.InputType;
@@ -23,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import com.github.ersin_ertan.hinterrortextinputview.validator.Validateable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,16 +30,14 @@ import java.util.List;
 public class HintErrorTextInputView extends TextInputLayout {
 
   private static final int AVG_NUM_VALIDATORS = 2;
-
+  private static final String EMPTY = "";
   // TODO: 12/28/16 enable and disable error to have smaller sized views
   List<Validateable> validators;
-  boolean isShowingError = false;
-  @StyleRes private int errorTextAppearance;
-  @StyleRes private int labelTextAppearance;
+  private boolean isShowingError = false;
   private TextInputEditText textInputEditText;
-  private String hint;
-  private int inputType;
-  private KeyListener keyListener;
+  @Nullable private KeyListener tempKeyListener = null;
+  private int tempInputType = InputType.TYPE_NULL;
+  private boolean hideErrorOnTextChanged = true;
 
   public HintErrorTextInputView(Context context) {
     super(context);
@@ -79,11 +75,7 @@ public class HintErrorTextInputView extends TextInputLayout {
       }
 
       @Override public void afterTextChanged(Editable s) {
-        if (isShowingError && isErrorEnabled()) {
-          isShowingError = false;
-          TransitionManager.beginDelayedTransition(HintErrorTextInputView.this);
-          setError("");
-        }
+        if (isShowingError && isErrorEnabled() && hideErrorOnTextChanged) hideError();
       }
     });
 
@@ -98,7 +90,6 @@ public class HintErrorTextInputView extends TextInputLayout {
           getContext().obtainStyledAttributes(attrs, R.styleable.HintErrorTextInputView);
       if (typedArray != null) {
 
-        // text appearance will overwrite set values like text color. Will doing it first nullify?
         textInputEditText.setTextAppearance(getContext(),
             typedArray.getResourceId(R.styleable.HintErrorTextInputView_android_textAppearance,
                 android.R.style.TextAppearance_DeviceDefault_Widget_EditText));
@@ -107,18 +98,17 @@ public class HintErrorTextInputView extends TextInputLayout {
             typedArray.getResourceId(R.styleable.HintErrorTextInputView_errorTextAppearance,
                 android.support.design.R.styleable.TextInputLayout_errorTextAppearance));
 
-        // is this the floating label?
         setHintTextAppearance(
             typedArray.getResourceId(R.styleable.HintErrorTextInputView_floatingLabelTextAppearance,
                 android.support.design.R.styleable.TextInputLayout_hintTextAppearance));
 
         if (typedArray.getText(R.styleable.HintErrorTextInputView_android_hint) != null) {
-          hint = typedArray.getText(R.styleable.HintErrorTextInputView_android_hint).toString();
-          setHint(hint);
+          setHint(typedArray.getText(R.styleable.HintErrorTextInputView_android_hint));
         }
-        inputType = typedArray.getInteger(R.styleable.HintErrorTextInputView_android_inputType,
+
+        tempInputType = typedArray.getInteger(R.styleable.HintErrorTextInputView_android_inputType,
             textInputEditText.getInputType());
-        textInputEditText.setInputType(inputType);
+        textInputEditText.setInputType(tempInputType);
 
         textInputEditText.setTextColor(
             typedArray.getInteger(R.styleable.HintErrorTextInputView_android_textColor,
@@ -131,12 +121,10 @@ public class HintErrorTextInputView extends TextInputLayout {
             typedArray.getInteger(R.styleable.HintErrorTextInputView_android_imeOptions,
                 EditorInfo.IME_ACTION_NEXT));
 
-        // will set the float value thus allows for any typedvalue complex unit
         float textSize =
             typedArray.getDimension(R.styleable.HintErrorTextInputView_android_textSize,
                 textInputEditText.getTextSize());
         textInputEditText.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
-        //textInputEditText.getTextSize() / getResources().getDisplayMetrics().scaledDensity);
 
         //if (!typedArray.getBoolean(R.styleable.HintErrorTextInputView_showHintAndLabel, false)) {
         // prevents the dual hints edittext/floating label, to change color, use style
@@ -149,6 +137,9 @@ public class HintErrorTextInputView extends TextInputLayout {
         if (typedArray.getBoolean(R.styleable.HintErrorTextInputView_errorEnabled, true)) {
           setErrorEnabled(true);
         }
+
+        hideErrorOnTextChanged =
+            typedArray.getBoolean(R.styleable.HintErrorTextInputView_hideErrorOnTextChanged, true);
 
         CharSequence text = typedArray.getText(R.styleable.HintErrorTextInputView_android_text);
         if (text != null) {
@@ -164,21 +155,22 @@ public class HintErrorTextInputView extends TextInputLayout {
 
   public void setEditable(boolean isEditable) {
     if (isEditable) {
-      textInputEditText.setTextIsSelectable(true);
-      textInputEditText.setFocusableInTouchMode(true);
-      textInputEditText.setInputType(inputType);
       textInputEditText.setFocusable(true);
       textInputEditText.setCursorVisible(true);
-      if (keyListener != null) {
-        textInputEditText.setKeyListener(keyListener);
+      textInputEditText.setTextIsSelectable(true);
+      textInputEditText.setFocusableInTouchMode(true);
+      if (tempInputType != -1) textInputEditText.setInputType(tempInputType);
+      if (tempKeyListener != null) {
+        textInputEditText.setKeyListener(tempKeyListener);
       }
     } else {
       textInputEditText.setTextIsSelectable(true);
       textInputEditText.setFocusableInTouchMode(true);
-      textInputEditText.setInputType(InputType.TYPE_NULL);
-      keyListener = textInputEditText.getKeyListener();
-      textInputEditText.setKeyListener(null);
       textInputEditText.setCursorVisible(false);
+      tempInputType = textInputEditText.getInputType();
+      textInputEditText.setInputType(InputType.TYPE_NULL);
+      tempKeyListener = textInputEditText.getKeyListener();
+      textInputEditText.setKeyListener(null);
       ((InputMethodManager) getContext().getSystemService(
           Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(textInputEditText.getWindowToken(),
           0);
@@ -186,12 +178,8 @@ public class HintErrorTextInputView extends TextInputLayout {
   }
 
   @Override public boolean onTouchEvent(MotionEvent event) {
-    textInputEditText.requestFocus();
+    textInputEditText.onTouchEvent(event);
     return super.onTouchEvent(event);
-  }
-
-  public void setText(String text) {
-    textInputEditText.setText(text);
   }
 
   /**
@@ -212,30 +200,85 @@ public class HintErrorTextInputView extends TextInputLayout {
     if (validators != null && !validators.isEmpty()) {
       String input = textInputEditText.getText().toString();
       for (Validateable v : validators) {
-        if (!v.isValid(input)) return setErrorText(v.getErrorMessage());
+        if (!v.isValid(input)) {
+          CharSequence hint = getHint();
+          if (hint != null) {
+            isShowingError = true;
+            setError(hint + " " + v.getErrorMessage());
+          } else {
+            CharSequence error = v.getErrorMessage();
+            if (error != null && error.length() > 0) {
+              isShowingError = true;
+              CharSequence firstLetter = Character.toString(error.charAt(0)).toUpperCase();
+              if (error.length() == 1) {
+                setError(firstLetter);
+              } else {
+                setError(firstLetter + error.subSequence(1, error.length()).toString());
+              }
+            } else {
+              isShowingError = false;
+            }
+          }
+          textInputEditText.requestFocus();
+        }
+        return false;
       }
     }
     return true;
   }
 
-  private boolean setErrorText(@NonNull String errorRes) {
-    if (isErrorEnabled()) {
-      isShowingError = true;
-      TransitionManager.beginDelayedTransition(this);
-      if (hint != null) setError(hint + " " + errorRes);
-      textInputEditText.requestFocus(); // add ability to show or hide keyboard
-    }
-    return false;
+  public void hideError() {
+    isShowingError = false;
+    setError(EMPTY);
   }
 
-  // save state
+  public boolean getIsShowingError() {
+    return isShowingError;
+  }
+
+  public boolean getHideErrorOnTextChanged() {
+    return hideErrorOnTextChanged;
+  }
+
+  public void setText(String text) {
+    textInputEditText.setText(text);
+  }
+
+  public int getInputType() {
+    if (tempInputType != InputType.TYPE_NULL) {
+      return tempInputType;
+    } else {
+      return textInputEditText.getInputType();
+    }
+  }
+
+  public void setInputType(int inputType) {
+    tempInputType = inputType;
+    textInputEditText.setInputType(inputType);
+  }
+
+  public List<Validateable> getValidators() {
+    if (validators.isEmpty()) return Collections.EMPTY_LIST;
+    return new ArrayList<>(validators);
+  }
+
+  @Nullable public KeyListener getKeyListener() {
+    return textInputEditText.getKeyListener() != null ? textInputEditText.getKeyListener()
+        : tempKeyListener;
+  }
+
+  public void setKeyListener(KeyListener keyListener) {
+    tempKeyListener = keyListener;
+    textInputEditText.setKeyListener(keyListener);
+  }
 
   @Override public Parcelable onSaveInstanceState() {
     Parcelable superState = super.onSaveInstanceState();
     SavedState ss = new SavedState(superState);
 
-    ss.inputType = inputType;
+    ss.inputType = tempInputType;
     ss.isShowingError = isShowingError ? 1 : 0;
+    ss.hideErrorOnTextChanged = hideErrorOnTextChanged ? 1 : 0;
 
     return ss;
   }
@@ -249,8 +292,9 @@ public class HintErrorTextInputView extends TextInputLayout {
     SavedState ss = (SavedState) state;
     super.onRestoreInstanceState(ss.getSuperState());
 
-    inputType = ss.inputType;
+    tempInputType = ss.inputType;
     isShowingError = ss.isShowingError == 1;
+    hideErrorOnTextChanged = ss.hideErrorOnTextChanged == 1;
   }
 
   static class SavedState extends BaseSavedState {
@@ -266,6 +310,7 @@ public class HintErrorTextInputView extends TextInputLayout {
         };
     int inputType;
     int isShowingError;
+    int hideErrorOnTextChanged;
 
     SavedState(Parcelable superState) {
       super(superState);
@@ -275,12 +320,14 @@ public class HintErrorTextInputView extends TextInputLayout {
       super(in);
       this.inputType = in.readInt();
       this.isShowingError = in.readInt();
+      this.hideErrorOnTextChanged = in.readInt();
     }
 
     @Override public void writeToParcel(Parcel out, int flags) {
       super.writeToParcel(out, flags);
       out.writeInt(this.inputType);
       out.writeInt(this.isShowingError);
+      out.writeInt(this.hideErrorOnTextChanged);
     }
   }
 }

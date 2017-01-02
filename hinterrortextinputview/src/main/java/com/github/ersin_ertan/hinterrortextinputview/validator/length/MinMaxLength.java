@@ -14,7 +14,7 @@ public class MinMaxLength extends AbsValidateable {
   public final int min;
   public final int max;
 
-  private MinMaxLength(int min, int max, String errorMessage) {
+  private MinMaxLength(int min, int max, CharSequence errorMessage) {
     this.min = min;
     this.max = max;
     this.errorMessage = errorMessage;

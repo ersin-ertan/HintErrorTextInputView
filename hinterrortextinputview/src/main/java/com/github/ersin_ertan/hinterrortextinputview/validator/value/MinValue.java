@@ -13,7 +13,7 @@ public class MinValue<T extends Number> extends AbsValidateable {
 
   public final T min;
 
-  private MinValue(T min, String errorMessage) {
+  private MinValue(T min, CharSequence errorMessage) {
     this.min = min;
     this.errorMessage = errorMessage;
   }

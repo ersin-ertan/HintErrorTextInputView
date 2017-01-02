@@ -14,7 +14,7 @@ public class MinMaxValue<T extends Number> extends AbsValidateable {
   public final T min;
   public final T max;
 
-  private MinMaxValue(T min, T max, String errorMessage) {
+  private MinMaxValue(T min, T max, CharSequence errorMessage) {
     this.min = min;
     this.max = max;
     this.errorMessage = errorMessage;

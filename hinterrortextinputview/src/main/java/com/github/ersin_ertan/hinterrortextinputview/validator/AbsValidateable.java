@@ -8,11 +8,11 @@ import android.support.annotation.NonNull;
 
 public abstract class AbsValidateable implements Validateable {
 
-  protected String errorMessage;
+  protected CharSequence errorMessage;
 
   @Override public abstract boolean isValid(@NonNull String input);
 
-  @Override public String getErrorMessage() {
+  @Override public CharSequence getErrorMessage() {
     return errorMessage;
   }
 }

@@ -13,7 +13,7 @@ public class MinLength extends AbsValidateable {
 
   public final int min;
 
-  private MinLength(int min, String errorMessage) {
+  private MinLength(int min, CharSequence errorMessage) {
     this.min = min;
     this.errorMessage = errorMessage;
   }

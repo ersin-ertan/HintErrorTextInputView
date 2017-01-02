@@ -8,5 +8,5 @@ import android.support.annotation.NonNull;
 public interface Validateable {
   boolean isValid(@NonNull String input);
 
-  String getErrorMessage();
+  CharSequence getErrorMessage();
 }
