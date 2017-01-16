@@ -3,6 +3,7 @@
   <declare-styleable name="HintErrorTextInputView">
     <attr format="reference" name="errorTextAppearance"/>
     <attr format="reference" name="floatingLabelTextAppearance"/>
+    <attr format="reference" name="floatingLabelTextAppearanceUnfocused"/>
     <attr format="boolean" name="showUnderline"/>
     <attr format="boolean" name="errorEnabled"/>
     <attr format="boolean" name="hideErrorOnTextChanged"/>

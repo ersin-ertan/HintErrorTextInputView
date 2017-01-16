@@ -6,7 +6,7 @@ import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
 import com.github.ersin_ertan.hinterrortextinputview.HintErrorTextInputView;
-import com.github.ersin_ertan.hinterrortextinputview.validator.length.MaxLength;
+import com.github.ersin_ertan.hinterrortextinputview.validator.length.Empty;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
     setContentView(R.layout.activity_main);
 
     hint1 = (HintErrorTextInputView) findViewById(R.id.hint1);
-    hint1.validateThat(MaxLength.is(this, 2));
+    hint1.validateThat(Empty.not(this));
     button = (Button) findViewById(R.id.button);
     hint1.setInputType(InputType.TYPE_CLASS_DATETIME);
     final boolean[] e = { false };
@@ -27,7 +27,6 @@ public class MainActivity extends AppCompatActivity {
       @Override public void onClick(View v) {
         //hint1.setEditable(true);
         hint1.isValid();
-
       }
     });
   }

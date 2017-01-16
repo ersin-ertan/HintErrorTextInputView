@@ -7,6 +7,7 @@ import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
+import android.support.transition.TransitionManager;
 import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.InputType;
@@ -34,6 +35,7 @@ public class HintErrorTextInputView extends TextInputLayout {
   // TODO: 12/28/16 enable and disable error to have smaller sized views
   List<Validateable> validators;
   private boolean isShowingError = false;
+  private boolean usingError = true;
   private TextInputEditText textInputEditText;
   @Nullable private KeyListener tempKeyListener = null;
   private int tempInputType = InputType.TYPE_NULL;
@@ -75,7 +77,7 @@ public class HintErrorTextInputView extends TextInputLayout {
       }
 
       @Override public void afterTextChanged(Editable s) {
-        if (isShowingError && isErrorEnabled() && hideErrorOnTextChanged) hideError();
+        if (isShowingError && usingError && hideErrorOnTextChanged) hideError();
       }
     });
 
@@ -134,8 +136,9 @@ public class HintErrorTextInputView extends TextInputLayout {
         //else {
         //    setHintAnimationEnabled(false); // else overlap on edittext unfocus with hint/label
         //  }
-        if (typedArray.getBoolean(R.styleable.HintErrorTextInputView_errorEnabled, true)) {
-          setErrorEnabled(true);
+        setErrorEnabled(false);
+        if (!typedArray.getBoolean(R.styleable.HintErrorTextInputView_errorEnabled, true)) {
+          usingError = false;
         }
 
         hideErrorOnTextChanged =
@@ -201,6 +204,10 @@ public class HintErrorTextInputView extends TextInputLayout {
       String input = textInputEditText.getText().toString();
       for (Validateable v : validators) {
         if (!v.isValid(input)) {
+          if (usingError) {
+            TransitionManager.beginDelayedTransition(this);
+            setErrorEnabled(true);
+          }
           CharSequence hint = getHint();
           if (hint != null) {
             isShowingError = true;
@@ -228,8 +235,9 @@ public class HintErrorTextInputView extends TextInputLayout {
   }
 
   public void hideError() {
-    isShowingError = false;
     setError(EMPTY);
+    isShowingError = false;
+    setErrorEnabled(false);
   }
 
   public boolean getIsShowingError() {
@@ -278,6 +286,7 @@ public class HintErrorTextInputView extends TextInputLayout {
 
     ss.inputType = tempInputType;
     ss.isShowingError = isShowingError ? 1 : 0;
+    ss.usingError = usingError ? 1 : 0;
     ss.hideErrorOnTextChanged = hideErrorOnTextChanged ? 1 : 0;
 
     return ss;
@@ -294,6 +303,7 @@ public class HintErrorTextInputView extends TextInputLayout {
 
     tempInputType = ss.inputType;
     isShowingError = ss.isShowingError == 1;
+    usingError = ss.usingError == 1;
     hideErrorOnTextChanged = ss.hideErrorOnTextChanged == 1;
   }
 
@@ -310,6 +320,7 @@ public class HintErrorTextInputView extends TextInputLayout {
         };
     int inputType;
     int isShowingError;
+    int usingError;
     int hideErrorOnTextChanged;
 
     SavedState(Parcelable superState) {
@@ -320,6 +331,7 @@ public class HintErrorTextInputView extends TextInputLayout {
       super(in);
       this.inputType = in.readInt();
       this.isShowingError = in.readInt();
+      this.usingError = in.readInt();
       this.hideErrorOnTextChanged = in.readInt();
     }
 
@@ -327,6 +339,7 @@ public class HintErrorTextInputView extends TextInputLayout {
       super.writeToParcel(out, flags);
       out.writeInt(this.inputType);
       out.writeInt(this.isShowingError);
+      out.writeInt(this.usingError);
       out.writeInt(this.hideErrorOnTextChanged);
     }
   }

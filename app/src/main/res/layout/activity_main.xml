@@ -23,9 +23,10 @@
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:editable="true"
+        android:hint="HelloWorald"
         android:imeOptions="actionNext"
         android:inputType="textPersonName|textCapWords"
-        android:text="Text"
+
         tools:layout_height="100dp"
         />
 
@@ -34,6 +35,7 @@
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:editable="true"
+        android:hint="HELELELO"
         android:imeOptions="actionNext"
         android:inputType="textPersonName|textCapWords"
         android:text="Text"
