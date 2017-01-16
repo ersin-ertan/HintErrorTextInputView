@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 import com.github.ersin_ertan.hinterrortextinputview.HintErrorTextInputView;
 import com.github.ersin_ertan.hinterrortextinputview.validator.length.Empty;
 
@@ -26,7 +27,8 @@ public class MainActivity extends AppCompatActivity {
     button.setOnClickListener(new View.OnClickListener() {
       @Override public void onClick(View v) {
         //hint1.setEditable(true);
-        hint1.isValid();
+        boolean b = hint1.isValid();
+        Toast.makeText(MainActivity.this, String.valueOf(b), Toast.LENGTH_SHORT).show();
       }
     });
   }

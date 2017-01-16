@@ -227,8 +227,8 @@ public class HintErrorTextInputView extends TextInputLayout {
             }
           }
           textInputEditText.requestFocus();
-        }
         return false;
+        }
       }
     }
     return true;
