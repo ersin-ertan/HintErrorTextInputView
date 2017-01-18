@@ -199,35 +199,43 @@ public class HintErrorTextInputView extends TextInputLayout {
     return this;
   }
 
+  public boolean isValidNoError() {
+    return isValid(false);
+  }
+
   public boolean isValid() {
+    return isValid(true);
+  }
+
+  private boolean isValid(boolean showError) {
     if (validators != null && !validators.isEmpty()) {
       String input = textInputEditText.getText().toString();
       for (Validateable v : validators) {
         if (!v.isValid(input)) {
-          if (usingError) {
+          if (usingError && showError) {
             TransitionManager.beginDelayedTransition(this);
             setErrorEnabled(true);
-          }
-          CharSequence hint = getHint();
-          if (hint != null) {
-            isShowingError = true;
-            setError(hint + " " + v.getErrorMessage());
-          } else {
-            CharSequence error = v.getErrorMessage();
-            if (error != null && error.length() > 0) {
+            CharSequence hint = getHint();
+            if (hint != null) {
               isShowingError = true;
-              CharSequence firstLetter = Character.toString(error.charAt(0)).toUpperCase();
-              if (error.length() == 1) {
-                setError(firstLetter);
-              } else {
-                setError(firstLetter + error.subSequence(1, error.length()).toString());
-              }
+              setError(hint + " " + v.getErrorMessage());
             } else {
-              isShowingError = false;
+              CharSequence error = v.getErrorMessage();
+              if (error != null && error.length() > 0) {
+                isShowingError = true;
+                CharSequence firstLetter = Character.toString(error.charAt(0)).toUpperCase();
+                if (error.length() == 1) {
+                  setError(firstLetter);
+                } else {
+                  setError(firstLetter + error.subSequence(1, error.length()).toString());
+                }
+              } else {
+                isShowingError = false;
+              }
             }
+            textInputEditText.requestFocus();
           }
-          textInputEditText.requestFocus();
-        return false;
+          return false;
         }
       }
     }
