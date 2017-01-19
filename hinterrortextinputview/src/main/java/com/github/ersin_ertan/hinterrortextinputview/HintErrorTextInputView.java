@@ -20,6 +20,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import com.github.ersin_ertan.hinterrortextinputview.validator.Validateable;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +41,8 @@ public class HintErrorTextInputView extends TextInputLayout {
   @Nullable private KeyListener tempKeyListener = null;
   private int tempInputType = InputType.TYPE_NULL;
   private boolean hideErrorOnTextChanged = true;
+  private TextWatcher textWatcher; // does this need to be a field?
+  private List<WeakReference<IsValidListener>> isValidListenerList;
 
   public HintErrorTextInputView(Context context) {
     super(context);
@@ -69,20 +72,38 @@ public class HintErrorTextInputView extends TextInputLayout {
     //Typeface tf = Typeface.createFromAsset(getContext().getAssets(), "fonts/AvenirLTStd-Roman.otf");
     //textInputEditText.setTypeface(tf);
     //setTypeface(tf);
-    textInputEditText.addTextChangedListener(new TextWatcher() {
-      @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-      }
+    if (textWatcher == null) {
+      textWatcher = new TextWatcher() {
+        @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
 
-      @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-      }
+        @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+        }
 
-      @Override public void afterTextChanged(Editable s) {
-        if (isShowingError && usingError && hideErrorOnTextChanged) hideError();
-      }
-    });
+        @Override public void afterTextChanged(Editable s) {
+          if (isShowingError && usingError && hideErrorOnTextChanged) hideError();
+          updateIsValidListeners(isValidNoError());
+        }
+      };
+    }
+    textInputEditText.addTextChangedListener(textWatcher);
 
     addView(textInputEditText, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
         LayoutParams.WRAP_CONTENT));
+  }
+
+  // should we be using weak references for listeners?
+  private void updateIsValidListeners(boolean isValid) {
+    if (isValidListenerList != null && !isValidListenerList.isEmpty()) {
+      for (WeakReference<IsValidListener> ivl : isValidListenerList) {
+        ivl.get().isValid(isValid);
+      }
+    }
+  }
+
+  public void addIsValidListener(IsValidListener isValidListener) {
+    if (isValidListenerList == null) isValidListenerList = new ArrayList<>(2);
+    isValidListenerList.add(new WeakReference<>(isValidListener));
   }
 
   private void setAttributeValues(@Nullable AttributeSet attrs) {
@@ -313,6 +334,10 @@ public class HintErrorTextInputView extends TextInputLayout {
     isShowingError = ss.isShowingError == 1;
     usingError = ss.usingError == 1;
     hideErrorOnTextChanged = ss.hideErrorOnTextChanged == 1;
+  }
+
+  public interface IsValidListener {
+    void isValid(boolean isValid);
   }
 
   static class SavedState extends BaseSavedState {

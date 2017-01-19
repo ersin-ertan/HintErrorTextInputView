@@ -9,7 +9,8 @@ import android.widget.Toast;
 import com.github.ersin_ertan.hinterrortextinputview.HintErrorTextInputView;
 import com.github.ersin_ertan.hinterrortextinputview.validator.length.Empty;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+    implements HintErrorTextInputView.IsValidListener {
 
   HintErrorTextInputView hint1;
 
@@ -23,7 +24,12 @@ public class MainActivity extends AppCompatActivity {
     hint1.validateThat(Empty.not(this));
     button = (Button) findViewById(R.id.button);
     hint1.setInputType(InputType.TYPE_CLASS_DATETIME);
-    final boolean[] e = { false };
+    //hint1.addIsValidListener(new HintErrorTextInputView.IsValidListener() {
+    //  @Override public void isValid(boolean isValid) {
+    //    Toast.makeText(MainActivity.this, String.valueOf(isValid), Toast.LENGTH_SHORT).show();
+    //  }
+    //});
+    hint1.addIsValidListener(this);
     button.setOnClickListener(new View.OnClickListener() {
       @Override public void onClick(View v) {
         //hint1.setEditable(true);
@@ -31,5 +37,9 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(MainActivity.this, String.valueOf(b), Toast.LENGTH_SHORT).show();
       }
     });
+  }
+
+  @Override public void isValid(boolean isValid) {
+    Toast.makeText(MainActivity.this, String.valueOf(isValid), Toast.LENGTH_SHORT).show();
   }
 }
