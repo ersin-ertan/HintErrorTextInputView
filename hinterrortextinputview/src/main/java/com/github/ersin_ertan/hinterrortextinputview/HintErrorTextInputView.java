@@ -1,9 +1,12 @@
 package com.github.ersin_ertan.hinterrortextinputview;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
@@ -22,7 +25,6 @@ import android.widget.LinearLayout;
 import com.github.ersin_ertan.hinterrortextinputview.validator.Validateable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -38,11 +40,13 @@ public class HintErrorTextInputView extends TextInputLayout {
   private boolean isShowingError = false;
   private boolean usingError = true;
   private TextInputEditText textInputEditText;
+  private String timedErrorText;
   @Nullable private KeyListener tempKeyListener = null;
   private int tempInputType = InputType.TYPE_NULL;
   private boolean hideErrorOnTextChanged = true;
   private TextWatcher textWatcher; // does this need to be a field?
   private List<WeakReference<IsValidListener>> isValidListenerList;
+  private TimedErrorRunnable timedErrorRunnable;
 
   public HintErrorTextInputView(Context context) {
     super(context);
@@ -89,7 +93,7 @@ public class HintErrorTextInputView extends TextInputLayout {
     textInputEditText.addTextChangedListener(textWatcher);
 
     addView(textInputEditText, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-        LayoutParams.WRAP_CONTENT));
+        LinearLayout.LayoutParams.WRAP_CONTENT));
   }
 
   // should we be using weak references for listeners?
@@ -228,34 +232,12 @@ public class HintErrorTextInputView extends TextInputLayout {
     return isValid(true);
   }
 
-  private boolean isValid(boolean showError) {
+  private boolean isValid(boolean shouldShowError) {
     if (validators != null && !validators.isEmpty()) {
       String input = textInputEditText.getText().toString();
       for (Validateable v : validators) {
         if (!v.isValid(input)) {
-          if (usingError && showError) {
-            TransitionManager.beginDelayedTransition(this);
-            setErrorEnabled(true);
-            CharSequence hint = getHint();
-            if (hint != null) {
-              isShowingError = true;
-              setError(hint + " " + v.getErrorMessage());
-            } else {
-              CharSequence error = v.getErrorMessage();
-              if (error != null && error.length() > 0) {
-                isShowingError = true;
-                CharSequence firstLetter = Character.toString(error.charAt(0)).toUpperCase();
-                if (error.length() == 1) {
-                  setError(firstLetter);
-                } else {
-                  setError(firstLetter + error.subSequence(1, error.length()).toString());
-                }
-              } else {
-                isShowingError = false;
-              }
-            }
-            textInputEditText.requestFocus();
-          }
+          showError(v, shouldShowError);
           return false;
         }
       }
@@ -263,10 +245,47 @@ public class HintErrorTextInputView extends TextInputLayout {
     return true;
   }
 
+  private void showError(Validateable v, boolean shouldShowError) {
+    if (usingError && shouldShowError) {
+      TransitionManager.beginDelayedTransition(this);
+      setErrorEnabled(true);
+      CharSequence hint = getHint();
+      if (hint != null) {
+        isShowingError = true;
+        setError(hint + " " + v.getErrorMessage());
+      } else {
+        CharSequence error = v.getErrorMessage();
+        if (error != null && error.length() > 0) {
+          isShowingError = true;
+          CharSequence firstLetter = Character.toString(error.charAt(0)).toUpperCase();
+          if (error.length() == 1) {
+            setError(firstLetter);
+          } else {
+            setError(firstLetter + error.subSequence(1, error.length()).toString());
+          }
+        } else {
+          isShowingError = false;
+        }
+      }
+      textInputEditText.requestFocus();
+    }
+  }
+
+  public void showTimedError(@NonNull final String errorText, final long durationMillis) {
+    if (usingError) {
+      timedErrorRunnable = new TimedErrorRunnable(errorText, durationMillis);
+      postDelayed(timedErrorRunnable, durationMillis);
+    }
+  }
+
+  @Override protected void onConfigurationChanged(Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+  }
+
   public void hideError() {
     setError(EMPTY);
-    isShowingError = false;
     setErrorEnabled(false);
+    isShowingError = false;
   }
 
   public boolean getIsShowingError() {
@@ -295,7 +314,7 @@ public class HintErrorTextInputView extends TextInputLayout {
   }
 
   public List<Validateable> getValidators() {
-    if (validators.isEmpty()) return Collections.EMPTY_LIST;
+    if (validators.isEmpty()) return new ArrayList<>(0);
     return new ArrayList<>(validators);
   }
 
@@ -310,6 +329,7 @@ public class HintErrorTextInputView extends TextInputLayout {
   }
 
   @Override public Parcelable onSaveInstanceState() {
+
     Parcelable superState = super.onSaveInstanceState();
     SavedState ss = new SavedState(superState);
 
@@ -317,6 +337,11 @@ public class HintErrorTextInputView extends TextInputLayout {
     ss.isShowingError = isShowingError ? 1 : 0;
     ss.usingError = usingError ? 1 : 0;
     ss.hideErrorOnTextChanged = hideErrorOnTextChanged ? 1 : 0;
+    if (timedErrorRunnable != null && timedErrorRunnable.endTime > SystemClock.uptimeMillis()) {
+      ss.timedErrorDuration = timedErrorRunnable.endTime;
+      ss.timedErrorText = timedErrorText;
+      timedErrorRunnable = null;
+    }
 
     return ss;
   }
@@ -327,13 +352,21 @@ public class HintErrorTextInputView extends TextInputLayout {
       return;
     }
 
-    SavedState ss = (SavedState) state;
+    final SavedState ss = (SavedState) state;
     super.onRestoreInstanceState(ss.getSuperState());
 
     tempInputType = ss.inputType;
     isShowingError = ss.isShowingError == 1;
     usingError = ss.usingError == 1;
     hideErrorOnTextChanged = ss.hideErrorOnTextChanged == 1;
+    if (usingError && ss.timedErrorDuration > 0 && ss.timedErrorText != null) {
+      //showTimedError(ss.timedErrorText, ss.timedErrorDuration);
+      // FIXME: 2/3/17 A newly created timed error will run, however it will not hide the error
+      // after rotation, thus to keep state predictable, disable this feature
+      // Rotation will imply timed events are not accounted for until this is fixed
+      timedErrorText = null;
+      hideError();
+    }
   }
 
   public interface IsValidListener {
@@ -355,6 +388,8 @@ public class HintErrorTextInputView extends TextInputLayout {
     int isShowingError;
     int usingError;
     int hideErrorOnTextChanged;
+    long timedErrorDuration;
+    String timedErrorText;
 
     SavedState(Parcelable superState) {
       super(superState);
@@ -366,6 +401,8 @@ public class HintErrorTextInputView extends TextInputLayout {
       this.isShowingError = in.readInt();
       this.usingError = in.readInt();
       this.hideErrorOnTextChanged = in.readInt();
+      this.timedErrorDuration = in.readLong();
+      this.timedErrorText = in.readString();
     }
 
     @Override public void writeToParcel(Parcel out, int flags) {
@@ -374,6 +411,31 @@ public class HintErrorTextInputView extends TextInputLayout {
       out.writeInt(this.isShowingError);
       out.writeInt(this.usingError);
       out.writeInt(this.hideErrorOnTextChanged);
+      out.writeLong(this.timedErrorDuration);
+      out.writeString(this.timedErrorText);
+    }
+  }
+
+  private class TimedErrorRunnable implements Runnable {
+
+    final long endTime;
+    final String errorText;
+
+    TimedErrorRunnable(@NonNull final String errorText, final long durationMillis) {
+      endTime = SystemClock.uptimeMillis() + durationMillis;
+      TransitionManager.beginDelayedTransition(HintErrorTextInputView.this);
+      setErrorEnabled(true);
+      setError(timedErrorText = this.errorText = errorText);
+      isShowingError = true;
+    }
+
+    @Override public void run() {
+      // another error may be triggered thus we do not want to hide that error
+      if (isErrorEnabled() && isShowingError && errorText != null && errorText.equals(getError())) {
+        HintErrorTextInputView.this.hideError();
+        timedErrorText = null;
+        timedErrorRunnable = null;
+      }
     }
   }
 }
