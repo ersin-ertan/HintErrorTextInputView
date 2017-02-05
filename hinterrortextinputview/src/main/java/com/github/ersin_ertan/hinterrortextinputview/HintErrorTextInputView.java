@@ -26,6 +26,7 @@ import com.github.ersin_ertan.hinterrortextinputview.validator.Validateable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by mms on 12/28/16.
@@ -33,6 +34,7 @@ import java.util.List;
 
 public class HintErrorTextInputView extends TextInputLayout {
 
+  public static final long TIMED_ERROR_DURATION_DEFAULT = TimeUnit.SECONDS.toMillis(4);
   private static final int AVG_NUM_VALIDATORS = 2;
   private static final String EMPTY = "";
   // TODO: 12/28/16 enable and disable error to have smaller sized views
@@ -276,6 +278,10 @@ public class HintErrorTextInputView extends TextInputLayout {
       timedErrorRunnable = new TimedErrorRunnable(errorText, durationMillis);
       postDelayed(timedErrorRunnable, durationMillis);
     }
+  }
+
+  public void showTimedError(@NonNull final String errorText) {
+    showTimedError(errorText, TIMED_ERROR_DURATION_DEFAULT);
   }
 
   @Override protected void onConfigurationChanged(Configuration newConfig) {

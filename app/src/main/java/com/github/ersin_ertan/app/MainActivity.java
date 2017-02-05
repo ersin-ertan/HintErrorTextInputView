@@ -9,8 +9,6 @@ import android.widget.Toast;
 import com.github.ersin_ertan.hinterrortextinputview.HintErrorTextInputView;
 import com.github.ersin_ertan.hinterrortextinputview.validator.length.Empty;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-
 public class MainActivity extends AppCompatActivity
     implements HintErrorTextInputView.IsValidListener {
 
@@ -46,7 +44,7 @@ public class MainActivity extends AppCompatActivity
 
     button2.setOnClickListener(new View.OnClickListener() {
       @Override public void onClick(View v) {
-        hint1.showTimedError("TIMED_ERROR-", SECONDS.toMillis(5));
+        hint1.showTimedError("TIMED_ERROR-");
       }
     });
   }
