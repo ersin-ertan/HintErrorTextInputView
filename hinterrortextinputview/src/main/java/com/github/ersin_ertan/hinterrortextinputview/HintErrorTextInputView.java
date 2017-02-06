@@ -51,18 +51,11 @@ public class HintErrorTextInputView extends TextInputLayout {
   private TimedErrorRunnable timedErrorRunnable;
 
   public HintErrorTextInputView(Context context) {
-    super(context);
-    textInputEditText = new TextInputEditText(getContext());
-    initEditText(textInputEditText);
-    setSaveEnabled(true);
+    this(context, null);
   }
 
   public HintErrorTextInputView(Context context, AttributeSet attrs) {
-    super(context, attrs);
-    textInputEditText = new TextInputEditText(getContext());
-    initEditText(textInputEditText);
-    setAttributeValues(attrs);
-    setSaveEnabled(true);
+    this(context, attrs, -1);
   }
 
   public HintErrorTextInputView(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -178,7 +171,6 @@ public class HintErrorTextInputView extends TextInputLayout {
       }
 
       setEditable(typedArray.getBoolean(R.styleable.HintErrorTextInputView_android_editable, true));
-
       typedArray.recycle();
     }
   }
@@ -339,6 +331,7 @@ public class HintErrorTextInputView extends TextInputLayout {
     Parcelable superState = super.onSaveInstanceState();
     SavedState ss = new SavedState(superState);
 
+    ss.currentText = textInputEditText.getText().toString();
     ss.inputType = tempInputType;
     ss.isShowingError = isShowingError ? 1 : 0;
     ss.usingError = usingError ? 1 : 0;
@@ -360,6 +353,8 @@ public class HintErrorTextInputView extends TextInputLayout {
 
     final SavedState ss = (SavedState) state;
     super.onRestoreInstanceState(ss.getSuperState());
+
+    if (ss.currentText != null) textInputEditText.setText(ss.currentText);
 
     tempInputType = ss.inputType;
     isShowingError = ss.isShowingError == 1;
@@ -390,6 +385,7 @@ public class HintErrorTextInputView extends TextInputLayout {
             return new SavedState[size];
           }
         };
+    String currentText;
     int inputType;
     int isShowingError;
     int usingError;
@@ -403,6 +399,7 @@ public class HintErrorTextInputView extends TextInputLayout {
 
     private SavedState(Parcel in) {
       super(in);
+      this.currentText = in.readString();
       this.inputType = in.readInt();
       this.isShowingError = in.readInt();
       this.usingError = in.readInt();
@@ -413,6 +410,7 @@ public class HintErrorTextInputView extends TextInputLayout {
 
     @Override public void writeToParcel(Parcel out, int flags) {
       super.writeToParcel(out, flags);
+      out.writeString(this.currentText);
       out.writeInt(this.inputType);
       out.writeInt(this.isShowingError);
       out.writeInt(this.usingError);
