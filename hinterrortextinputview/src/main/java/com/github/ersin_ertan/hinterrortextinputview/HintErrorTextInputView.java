@@ -8,10 +8,12 @@ import android.os.Parcelable;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StyleRes;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.transition.TransitionManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.TextViewCompat;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
@@ -46,6 +48,7 @@ public class HintErrorTextInputView extends TextInputLayout {
   @Nullable private KeyListener tempKeyListener = null;
   private int tempInputType = InputType.TYPE_NULL;
   private boolean hideErrorOnTextChanged = true;
+  private int textAppearanceRes;
   private TextWatcher textWatcher; // does this need to be a field?
   private List<WeakReference<IsValidListener>> isValidListenerList;
   private TimedErrorRunnable timedErrorRunnable;
@@ -112,7 +115,7 @@ public class HintErrorTextInputView extends TextInputLayout {
           getContext().obtainStyledAttributes(attrs, R.styleable.HintErrorTextInputView);
       if (typedArray != null) {
 
-        textInputEditText.setTextAppearance(getContext(),
+        setTextAppearance(
             typedArray.getResourceId(R.styleable.HintErrorTextInputView_android_textAppearance,
                 android.R.style.TextAppearance_DeviceDefault_Widget_EditText));
 
@@ -305,6 +308,13 @@ public class HintErrorTextInputView extends TextInputLayout {
   public void setTextSize(int unit, float size) {
     textInputEditText.setTextSize(unit, size);
     // will not reposition the text in this view until another input
+  }
+
+  public void setTextAppearance(@StyleRes int resId) {
+    textAppearanceRes = resId;
+    if (textInputEditText != null) {
+      TextViewCompat.setTextAppearance(textInputEditText, resId);
+    }
   }
 
   public int getInputType() {
