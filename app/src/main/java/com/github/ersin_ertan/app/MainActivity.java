@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity
     button2.setOnClickListener(new View.OnClickListener() {
       @Override public void onClick(View v) {
         hint1.showTimedError("TIMED_ERROR-");
+        hint1.setTextSize(32);
       }
     });
   }

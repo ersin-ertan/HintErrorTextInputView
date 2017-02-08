@@ -298,6 +298,15 @@ public class HintErrorTextInputView extends TextInputLayout {
     textInputEditText.setText(text);
   }
 
+  public void setTextSize(float size) {
+    setTextSize(TypedValue.COMPLEX_UNIT_SP, size);
+  }
+
+  public void setTextSize(int unit, float size) {
+    textInputEditText.setTextSize(unit, size);
+    // will not reposition the text in this view until another input
+  }
+
   public int getInputType() {
     if (tempInputType != InputType.TYPE_NULL) {
       return tempInputType;
