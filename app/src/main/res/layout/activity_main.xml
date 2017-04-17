@@ -26,6 +26,7 @@
         android:hint="HelloWorald"
         android:imeOptions="actionNext"
         android:inputType="textPersonName|textCapWords"
+        android:maxLength="4"
 
         tools:layout_height="100dp"
         />

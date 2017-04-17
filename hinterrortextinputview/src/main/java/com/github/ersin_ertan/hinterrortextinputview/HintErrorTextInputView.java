@@ -15,6 +15,7 @@ import android.support.transition.TransitionManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.TextViewCompat;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.text.method.KeyListener;
@@ -129,6 +130,13 @@ public class HintErrorTextInputView extends TextInputLayout {
 
         if (typedArray.getText(R.styleable.HintErrorTextInputView_android_hint) != null) {
           setHint(typedArray.getText(R.styleable.HintErrorTextInputView_android_hint));
+        }
+
+        if (typedArray.getInt(R.styleable.HintErrorTextInputView_android_maxLength, 128) != 0) {
+          textInputEditText.setFilters(new InputFilter[] {
+              new InputFilter.LengthFilter(
+                  typedArray.getInt(R.styleable.HintErrorTextInputView_android_maxLength, 128))
+          });
         }
 
         tempInputType = typedArray.getInteger(R.styleable.HintErrorTextInputView_android_inputType,

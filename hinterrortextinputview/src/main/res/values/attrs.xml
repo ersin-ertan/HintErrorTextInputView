@@ -15,6 +15,7 @@
     <attr name="android:textColor"/>
     <attr name="android:textSize"/>
     <attr name="android:editable"/>
+    <attr name="android:maxLength"/>
     <attr name="android:text"/>
   </declare-styleable>
 </resources>
