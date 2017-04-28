@@ -43,6 +43,7 @@ public class HintErrorTextInputView extends TextInputLayout {
   // TODO: 12/28/16 enable and disable error to have smaller sized views
   List<Validateable> validators;
   private boolean isShowingError = false;
+  private boolean isEditable = true;
   private boolean usingError = true;
   private TextInputEditText textInputEditText;
   private String timedErrorText;
@@ -181,7 +182,8 @@ public class HintErrorTextInputView extends TextInputLayout {
         }
       }
 
-      setEditable(typedArray.getBoolean(R.styleable.HintErrorTextInputView_android_editable, true));
+      setEditable(isEditable =
+          typedArray.getBoolean(R.styleable.HintErrorTextInputView_android_editable, true));
       typedArray.recycle();
     }
   }
@@ -193,10 +195,8 @@ public class HintErrorTextInputView extends TextInputLayout {
       textInputEditText.setTextIsSelectable(true);
       textInputEditText.setFocusableInTouchMode(true);
       if (tempInputType != -1) textInputEditText.setInputType(tempInputType);
-      if (tempKeyListener != null) {
-        textInputEditText.setKeyListener(tempKeyListener);
-      }
-    } else {
+      if (tempKeyListener != null) textInputEditText.setKeyListener(tempKeyListener);
+    } else { // not editable
       textInputEditText.setTextIsSelectable(true);
       textInputEditText.setFocusableInTouchMode(true);
       textInputEditText.setCursorVisible(false);
@@ -208,6 +208,10 @@ public class HintErrorTextInputView extends TextInputLayout {
           Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(textInputEditText.getWindowToken(),
           0);
     }
+  }
+
+  public boolean getIsEditable() {
+    return isEditable;
   }
 
   @Override public boolean onTouchEvent(MotionEvent event) {
@@ -361,6 +365,7 @@ public class HintErrorTextInputView extends TextInputLayout {
     ss.currentText = textInputEditText.getText().toString();
     ss.inputType = tempInputType;
     ss.isShowingError = isShowingError ? 1 : 0;
+    ss.isEditable = isEditable ? 1 : 0;
     ss.usingError = usingError ? 1 : 0;
     ss.hideErrorOnTextChanged = hideErrorOnTextChanged ? 1 : 0;
     if (timedErrorRunnable != null && timedErrorRunnable.endTime > SystemClock.uptimeMillis()) {
@@ -385,6 +390,7 @@ public class HintErrorTextInputView extends TextInputLayout {
 
     tempInputType = ss.inputType;
     isShowingError = ss.isShowingError == 1;
+    isEditable = ss.isEditable == 1;
     usingError = ss.usingError == 1;
     hideErrorOnTextChanged = ss.hideErrorOnTextChanged == 1;
     if (usingError && ss.timedErrorDuration > 0 && ss.timedErrorText != null) {
@@ -415,6 +421,7 @@ public class HintErrorTextInputView extends TextInputLayout {
     String currentText;
     int inputType;
     int isShowingError;
+    int isEditable;
     int usingError;
     int hideErrorOnTextChanged;
     long timedErrorDuration;
@@ -429,6 +436,7 @@ public class HintErrorTextInputView extends TextInputLayout {
       this.currentText = in.readString();
       this.inputType = in.readInt();
       this.isShowingError = in.readInt();
+      this.isEditable = in.readInt();
       this.usingError = in.readInt();
       this.hideErrorOnTextChanged = in.readInt();
       this.timedErrorDuration = in.readLong();
@@ -440,6 +448,7 @@ public class HintErrorTextInputView extends TextInputLayout {
       out.writeString(this.currentText);
       out.writeInt(this.inputType);
       out.writeInt(this.isShowingError);
+      out.writeInt(this.isEditable);
       out.writeInt(this.usingError);
       out.writeInt(this.hideErrorOnTextChanged);
       out.writeLong(this.timedErrorDuration);
