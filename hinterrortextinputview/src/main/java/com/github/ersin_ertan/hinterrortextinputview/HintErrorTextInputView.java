@@ -182,13 +182,13 @@ public class HintErrorTextInputView extends TextInputLayout {
         }
       }
 
-      setEditable(isEditable =
-          typedArray.getBoolean(R.styleable.HintErrorTextInputView_android_editable, true));
+      setEditable(typedArray.getBoolean(R.styleable.HintErrorTextInputView_android_editable, true));
       typedArray.recycle();
     }
   }
 
   public void setEditable(boolean isEditable) {
+    this.isEditable = isEditable;
     if (isEditable) {
       textInputEditText.setFocusable(true);
       textInputEditText.setCursorVisible(true);
