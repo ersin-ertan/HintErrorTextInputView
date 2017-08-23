@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity
     hint1.validateThat(Empty.not(this));
     button = (Button) findViewById(R.id.button);
     Button button2 = (Button) findViewById(R.id.button2);
-    hint1.setInputType(InputType.TYPE_CLASS_DATETIME);
+    hint1.setInputType(InputType.TYPE_CLASS_TEXT);
     //hint1.addIsValidListener(new HintErrorTextInputView.IsValidListener() {
     //  @Override public void isValid(boolean isValid) {
     //    Toast.makeText(MainActivity.this, String.valueOf(isValid), Toast.LENGTH_SHORT).show();
